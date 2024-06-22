@@ -1,0 +1,60 @@
+import 'package:flutter/material.dart';
+
+
+class ServiceTab extends StatefulWidget {
+
+  @override
+  State<ServiceTab> createState() => _ServiceTabState();
+}
+
+class _ServiceTabState extends State<ServiceTab> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Services"),
+        centerTitle: true,
+        backgroundColor: Color(0xFFB8E2F2),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Container(
+        color: Colors.white,
+        padding: EdgeInsets.all(20),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              serviceButton(context, "Manage Carpooling", Icons.directions_car, (){
+                //Navigator.push(context, MaterialPageRoute(builder: (context) => ()));
+              }),
+              SizedBox(height: 20),
+              serviceButton(context, "Choose Route", Icons.widgets_outlined, (){
+                //Navigator.push(context, MaterialPageRoute(builder: (context) => ()));
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  Widget serviceButton(BuildContext, String title, IconData icon, VoidCallback onPressed)
+  {
+    return  Container(
+      margin: EdgeInsets.only(bottom: 20),
+      child: ElevatedButton.icon(
+        icon: Icon(icon, color: Colors.black),
+        label: Text(title),
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFFB8E2F2),
+          foregroundColor: Colors.black,
+          textStyle: TextStyle(fontSize: 16),
+          minimumSize: Size(double.infinity, 50),
+          elevation: 5,
+        ),),
+    );
+  }
+}
