@@ -19,6 +19,8 @@ class DriverDetails extends StatelessWidget {
     required this.driverName,
     required this.vehicleModel,
     required this.vehiclePlate,
+    required String rideId,
+    required driverId,
   });
 
   @override

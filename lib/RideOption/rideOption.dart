@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -35,18 +36,18 @@ class _RideoptionState extends State<Rideoption> {
   }
 
   double calculateFare(double distance, String rideType) {
-    double baseRate = 2.0;
+    double baseRate = 1;
     double rate = baseRate;
 
     switch (rideType) {
       case "MotoRide":
-        rate = baseRate;
+        rate = baseRate * 1;
         break;
       case "4-Seater Car":
         rate = baseRate * 1.5;
         break;
       case "6-Seater Car":
-        rate = baseRate * 3;
+        rate = baseRate * 2;
         break;
     }
     return rate * distance;
@@ -130,12 +131,25 @@ class _RideoptionState extends State<Rideoption> {
         try {
           double distance = await fetchRouteDistance(widget.pickupLocation, widget.destinationLocation);
           double fare = calculateFare(distance, title);
+
+          // Generate rideId by creating a ride in Firestore
+          DocumentReference rideRef = await FirebaseFirestore.instance.collection('rides').add({
+            'pickupLocation': GeoPoint(widget.pickupLocation.latitude, widget.pickupLocation.longitude),
+            'destinationLocation': GeoPoint(widget.destinationLocation.latitude, widget.destinationLocation.longitude),
+            'status': 'pending',
+            'rideType': title,
+            'fare': fare,
+            // Add any other necessary details
+          });
+
+          // Now pass the generated rideId to ConfirmBooking
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => ConfirmBooking(
               pickupLocation: widget.pickupLocation,
               destinationLocation: widget.destinationLocation,
               rideType: title,
               fare: fare,
+              rideId: rideRef.id,  // Passing the newly created rideId
             ),
           ));
         } catch (e) {

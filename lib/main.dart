@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:passenger_app/PassengerHome.dart';
 import 'package:passenger_app/ProfilePage/profile_tab.dart';
+import 'package:passenger_app/paymentPage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:passenger_app/splashScreen/splash_screen.dart';
 
@@ -36,6 +38,10 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SplashScreen(),
+      routes: {
+        '/home': (context) => PassengerHome(rideId: 'ride1'), // Replace with actual rideId
+        '/payment': (context) => PaymentPage(rideId: ModalRoute.of(context)?.settings.arguments as String), // Replace with actual rideId
+      },
       debugShowCheckedModeBanner: false,
     );
   }

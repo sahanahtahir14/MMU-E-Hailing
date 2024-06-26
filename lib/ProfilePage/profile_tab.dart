@@ -1,6 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../tabpages/auth_service.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -8,28 +9,21 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  Map<String, dynamic>? userProfile;
+  User? user = FirebaseAuth.instance.currentUser;
+  DocumentSnapshot? userProfile;
 
   @override
   void initState() {
     super.initState();
-    _fetchUserProfile();
+    fetchUserProfile();
   }
 
-  Future<void> _fetchUserProfile() async {
-    try {
-      // Change the endpoint URL to your actual Node.js server's endpoint
-      var response = await http.get(Uri.parse('http://10.193.106.152:4001/user/profile'));
-
-      if (response.statusCode == 200) {
-        setState(() {
-          userProfile = jsonDecode(response.body);
-        });
-      } else {
-        print('Failed to load user profile');
-      }
-    } catch (e) {
-      print('Error fetching user profile: $e');
+  Future<void> fetchUserProfile() async {
+    if (user != null) {
+      var profileData = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
+      setState(() {
+        userProfile = profileData;
+      });
     }
   }
 
@@ -37,43 +31,67 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: Text("Profile"),
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        backgroundColor: Color(0xFFB8E2F2),
+
       ),
       body: userProfile == null
           ? Center(child: CircularProgressIndicator())
           : ListView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         children: <Widget>[
-          /*
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: NetworkImage(
-                userProfile!['photoUrl'] ?? 'path_to_default_image'),
-          ),
-          SizedBox(height: 20),
-           */
-          buildDetailItem('User ID', userProfile!['userId']),
-          buildDetailItem('Name', userProfile!['name']),
-          buildDetailItem('Email', userProfile!['email']),
-          buildDetailItem('Phone Number', userProfile!['phone']),
+          SizedBox(height: 24),
+          detailItem("Name", userProfile!['username']),
+          detailItem("Email", user!.email!),
+          detailItem("Phone Number", userProfile!['phone']),
+          SizedBox(height: 24),
+          logoutButton(context),
+          SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget buildDetailItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(fontWeight: FontWeight.bold))),
-          Expanded(child: Text(value, textAlign: TextAlign.right)),
+  Widget detailItem(String label, String value) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: Offset(0, 2),
+          ),
         ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Flexible(
+            child: Text(value, textAlign: TextAlign.right, style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget logoutButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () async {
+        await AuthService.logout();
+        Navigator.of(context).pushReplacementNamed('/login');
+      },
+      child: Text('Logout'),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white, backgroundColor: Colors.redAccent,
+        minimumSize: Size(double.infinity, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

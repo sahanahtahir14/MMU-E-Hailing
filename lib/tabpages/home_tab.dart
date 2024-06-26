@@ -125,16 +125,16 @@ class _HomeTabState extends State<HomeTab> {
                             MaterialPageRoute(builder: (context) => Searchscreen()),
                           );
                         },
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.search, color: Colors.blue,),
-                            SizedBox(width: 16.0,),
-                            Text("Search Drop Off" , style: TextStyle(fontSize: 15.0, color: Colors.black),),
-                          ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.search, color: Colors.blue,),
+                              SizedBox(width: 16.0,),
+                              Text("Search Drop Off" , style: TextStyle(fontSize: 15.0, color: Colors.black),),
+                            ],
+                          ),
                         ),
-                      ),
                       ),
                     ),
                     SizedBox(height: 20.0,),

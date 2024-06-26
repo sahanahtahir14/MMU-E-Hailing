@@ -1,79 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:passenger_app/driverDetails.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../driverDetails.dart';
 
-class ConfirmBooking extends StatelessWidget {
+class ConfirmBooking extends StatefulWidget {
   final LatLng pickupLocation;
   final LatLng destinationLocation;
   final String rideType;
   final double fare;
+  final String rideId;
 
   ConfirmBooking({
     required this.pickupLocation,
     required this.destinationLocation,
     required this.rideType,
     required this.fare,
+    required this.rideId,
   });
 
-  Future<void> bookRide(BuildContext context) async {
-    final response = await http.post(
-      Uri.parse('http://10.193.106.152:3007/bookRide'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'pickupLocation': {
-          'latitude': pickupLocation.latitude,
-          'longitude': pickupLocation.longitude,
-        },
-        'destinationLocation': {
-          'latitude': destinationLocation.latitude,
-          'longitude': destinationLocation.longitude,
-        },
-        'rideType': rideType,
-      }),
-    );
+  @override
+  _ConfirmBookingState createState() => _ConfirmBookingState();
+}
 
-    if (response.statusCode == 200) {
-      final driverDetails = json.decode(response.body);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DriverDetails(
-            pickupLocation: pickupLocation,
-            destinationLocation: destinationLocation,
-            rideType: rideType,
-            fare: fare,
-            driverName: driverDetails['driverName'],
-            vehicleModel: driverDetails['vehicleModel'],
-            vehiclePlate: driverDetails['vehiclePlate'],
-          ),
-        ),
-      );
-    } else {
-      // Handle error
-      print('Failed to book ride');
-    }
+class _ConfirmBookingState extends State<ConfirmBooking> {
+  bool _isLoading = false;
+  Stream<DocumentSnapshot>? _rideStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _rideStream = FirebaseFirestore.instance.collection('rides').doc(widget.rideId).snapshots();
+    _watchRide();
+  }
+
+  void _watchRide() {
+    _rideStream?.listen((snapshot) {
+      if (snapshot.exists) {
+        var data = snapshot.data() as Map<String, dynamic>;
+        if (data['status'] == 'accepted' && data.containsKey('driverDetails')) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => DriverDetails(
+                pickupLocation: widget.pickupLocation,
+                destinationLocation: widget.destinationLocation,
+                rideType: widget.rideType,
+                fare: widget.fare,
+                driverName: data['driverDetails']['name'],
+                vehicleModel: data['driverDetails']['vehicleModel'],
+                vehiclePlate: data['driverDetails']['vehiclePlate'],
+                rideId: widget.rideId,
+                driverId: data['driverDetails']['driverId'],
+              ),
+            ),
+          );
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     Set<Marker> markers = {
       Marker(
-        markerId: MarkerId("pickup"),
-        position: pickupLocation,
-        infoWindow: InfoWindow(title: 'Pick-up Location'),
+        markerId: const MarkerId("pickup"),
+        position: widget.pickupLocation,
+        infoWindow: const InfoWindow(title: 'Pick-up Location'),
       ),
       Marker(
-        markerId: MarkerId("destination"),
-        position: destinationLocation,
-        infoWindow: InfoWindow(title: 'Destination'),
+        markerId: const MarkerId("destination"),
+        position: widget.destinationLocation,
+        infoWindow: const InfoWindow(title: 'Destination'),
       ),
     };
+
     Set<Polyline> polylines = {
       Polyline(
-        polylineId: PolylineId("route"),
-        points: [pickupLocation, destinationLocation],
+        polylineId: const PolylineId("route"),
+        points: [widget.pickupLocation, widget.destinationLocation],
         width: 4,
         color: Colors.blue,
       ),
@@ -81,11 +84,11 @@ class ConfirmBooking extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Confirm Booking"),
+        title: const Text("Confirm Booking"),
         centerTitle: true,
-        backgroundColor: Color(0xFFB8E2F2),
+        backgroundColor: const Color(0xFFB8E2F2),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -95,8 +98,8 @@ class ConfirmBooking extends StatelessWidget {
             child: GoogleMap(
               initialCameraPosition: CameraPosition(
                 target: LatLng(
-                  (pickupLocation.latitude + destinationLocation.latitude) / 2,
-                  (pickupLocation.longitude + destinationLocation.longitude) / 2,
+                  (widget.pickupLocation.latitude + widget.destinationLocation.latitude) / 2,
+                  (widget.pickupLocation.longitude + widget.destinationLocation.longitude) / 2,
                 ),
                 zoom: 15,
               ),
@@ -105,15 +108,15 @@ class ConfirmBooking extends StatelessWidget {
             ),
           ),
           Container(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(18.0),
                 topRight: Radius.circular(18.0),
               ),
               boxShadow: [
-                BoxShadow(
+                const BoxShadow(
                   color: Color(0xFFB8E2F2),
                   blurRadius: 3.0,
                   spreadRadius: 0.5,
@@ -123,33 +126,35 @@ class ConfirmBooking extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text(
+                const Text(
                   'Calculated Fare',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      rideType,
+                      widget.rideType,
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     Text(
-                      'RM ${fare.toStringAsFixed(2)}',
+                      'RM ${widget.fare.toStringAsFixed(2)}',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () => bookRide(context),
-                  child: Text('Book Ride'),
+                const SizedBox(height: 20),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: () => _bookRide(context),
+                  child: const Text('Book Ride'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFB8E2F2),
+                    backgroundColor: const Color(0xFFB8E2F2),
                     foregroundColor: Colors.black,
-                    minimumSize: Size(double.infinity, 50),
-                    textStyle: TextStyle(fontSize: 18),
+                    minimumSize: const Size(double.infinity, 50),
+                    textStyle: const TextStyle(fontSize: 18),
                   ),
                 ),
               ],
@@ -158,5 +163,27 @@ class ConfirmBooking extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _bookRide(BuildContext context) {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Update ride status to "requested"
+    FirebaseFirestore.instance.collection('rides').doc(widget.rideId).set({
+      'pickupLocation': GeoPoint(widget.pickupLocation.latitude, widget.pickupLocation.longitude),
+      'destinationLocation': GeoPoint(widget.destinationLocation.latitude, widget.destinationLocation.longitude),
+      'rideType': widget.rideType,
+      'fare': widget.fare,
+      'status': 'requested'
+    }).then((_) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      // Continue to watch the ride for status updates
+      _watchRide();
+    });
   }
 }

@@ -32,9 +32,9 @@ class _HistoryPageState extends State<HistoryPage> {
               itemBuilder: (context, index) {
                 var ride = snapshot.data![index];
                 return ListTile(
-                  title: Text(ride.destination),
+                  title: Text(ride.destinationLocation),
                   subtitle: Text(
-                      '${ride.dateTime} - RM ${ride.cost.toStringAsFixed(2)}'),
+                      'RM ${ride.cost.toStringAsFixed(2)}'),
                 );
               },
             );
