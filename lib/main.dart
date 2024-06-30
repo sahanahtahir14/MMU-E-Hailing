@@ -5,7 +5,8 @@ import 'package:passenger_app/ProfilePage/profile_tab.dart';
 import 'package:passenger_app/paymentPage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:passenger_app/splashScreen/splash_screen.dart';
-
+import 'package:passenger_app/tabpages/cancelPage.dart';
+import 'package:passenger_app/RideOption/ConfirmBooking.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
       home: SplashScreen(),
       routes: {
         '/home': (context) => PassengerHome(rideId: 'ride1'), // Replace with actual rideId
-        '/payment': (context) => PaymentPage(rideId: ModalRoute.of(context)?.settings.arguments as String), // Replace with actual rideId
+        // Replace with actual rideId
       },
       debugShowCheckedModeBanner: false,
     );

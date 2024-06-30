@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../tabpages/auth_service.dart';
+import '../login_screen.dart'; // Ensure this import is correct
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -34,7 +35,6 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text("Profile"),
         centerTitle: true,
         backgroundColor: Color(0xFFB8E2F2),
-
       ),
       body: userProfile == null
           ? Center(child: CircularProgressIndicator())
@@ -85,11 +85,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return ElevatedButton(
       onPressed: () async {
         await AuthService.logout();
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
       },
       child: Text('Logout'),
       style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white, backgroundColor: Colors.redAccent,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.redAccent,
         minimumSize: Size(double.infinity, 50),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

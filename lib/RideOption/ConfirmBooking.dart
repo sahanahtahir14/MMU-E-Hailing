@@ -49,7 +49,7 @@ class _ConfirmBookingState extends State<ConfirmBooking> {
                 vehicleModel: data['driverDetails']['vehicleModel'],
                 vehiclePlate: data['driverDetails']['vehiclePlate'],
                 rideId: widget.rideId,
-                driverId: data['driverDetails']['driverId'],
+                //  driverId: data['driverDetails']['driverId']
               ),
             ),
           );

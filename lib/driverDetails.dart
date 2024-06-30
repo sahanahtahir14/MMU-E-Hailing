@@ -1,8 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:passenger_app/paymentPage.dart';
 import 'package:passenger_app/tabpages/cancelPage.dart';
+import 'chartRoom.dart';
 
-class DriverDetails extends StatelessWidget {
+class DriverDetails extends StatefulWidget {
   final LatLng pickupLocation;
   final LatLng destinationLocation;
   final String rideType;
@@ -10,6 +14,8 @@ class DriverDetails extends StatelessWidget {
   final String driverName;
   final String vehicleModel;
   final String vehiclePlate;
+
+  final String rideId;
 
   DriverDetails({
     required this.pickupLocation,
@@ -19,9 +25,37 @@ class DriverDetails extends StatelessWidget {
     required this.driverName,
     required this.vehicleModel,
     required this.vehiclePlate,
-    required String rideId,
-    required driverId,
+
+    required this.rideId
   });
+
+  @override
+  _DriverDetailsState createState() => _DriverDetailsState();
+}
+
+class _DriverDetailsState extends State<DriverDetails> {
+  LatLng? driverCurrentLocation;
+  User? user = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDriverCurrentLocation();
+  }
+
+  Future<void> _fetchDriverCurrentLocation() async {
+    final DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
+        .collection('drivers')
+        .doc(user!.uid)
+        .get();
+
+    if (driverSnapshot.exists) {
+      GeoPoint location = driverSnapshot['currentLocation'];
+      setState(() {
+        driverCurrentLocation = LatLng(location.latitude, location.longitude);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,27 +75,33 @@ class DriverDetails extends StatelessWidget {
             child: GoogleMap(
               initialCameraPosition: CameraPosition(
                 target: LatLng(
-                  (pickupLocation.latitude + destinationLocation.latitude) / 2,
-                  (pickupLocation.longitude + destinationLocation.longitude) / 2,
+                  (widget.pickupLocation.latitude + widget.destinationLocation.latitude) / 2,
+                  (widget.pickupLocation.longitude + widget.destinationLocation.longitude) / 2,
                 ),
                 zoom: 15,
               ),
               markers: {
+                if (driverCurrentLocation != null)
+                  Marker(
+                    markerId: MarkerId("driver"),
+                    position: driverCurrentLocation!,
+                    infoWindow: InfoWindow(title: 'Driver Current Location'),
+                  ),
                 Marker(
                   markerId: MarkerId("pickup"),
-                  position: pickupLocation,
+                  position: widget.pickupLocation,
                   infoWindow: InfoWindow(title: 'Pick-up Location'),
                 ),
                 Marker(
                   markerId: MarkerId("destination"),
-                  position: destinationLocation,
+                  position: widget.destinationLocation,
                   infoWindow: InfoWindow(title: 'Destination'),
                 ),
               },
               polylines: {
                 Polyline(
                   polylineId: PolylineId("route"),
-                  points: [pickupLocation, destinationLocation],
+                  points: [widget.pickupLocation, widget.destinationLocation],
                   width: 4,
                   color: Colors.blue,
                 ),
@@ -96,11 +136,11 @@ class DriverDetails extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Vehicle: $vehicleModel',
+                      'Vehicle: ${widget.vehicleModel}',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     Text(
-                      'Plate: $vehiclePlate',
+                      'Plate: ${widget.vehiclePlate}',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -110,12 +150,14 @@ class DriverDetails extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Driver: $driverName',
+                      'Driver: ${widget.driverName}',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        // Implement chat functionality
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => ChatScreen()),
+                        );
                       },
                       icon: Icon(Icons.chat),
                       label: Text('Chat'),
@@ -140,6 +182,38 @@ class DriverDetails extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
                     foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    GeoPoint pickupGeoPoint = GeoPoint(
+                        widget.pickupLocation.latitude,
+                        widget.pickupLocation.longitude);
+                    GeoPoint destinationGeoPoint = GeoPoint(
+                        widget.destinationLocation.latitude,
+                        widget.destinationLocation.longitude);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentPage(
+                          driverName: widget.driverName,
+                          vehicleModel: widget.vehicleModel,
+                          vehiclePlate: widget.vehiclePlate,
+                          pickupLocation: pickupGeoPoint,
+                          destinationLocation: destinationGeoPoint,
+                          status: 'completed',
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text('Proceed to Payment'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFB8E2F2),
+                    foregroundColor: Colors.black,
                     minimumSize: Size(double.infinity, 50),
                     textStyle: TextStyle(fontSize: 18),
                   ),

@@ -39,7 +39,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         children: [
           HomeTab(),
           ServiceTab(),
-          HistoryPage(),
+          ActivityPage(),
           ProfilePage()
         ],
       ),

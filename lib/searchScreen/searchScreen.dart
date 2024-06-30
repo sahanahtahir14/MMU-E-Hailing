@@ -47,13 +47,13 @@ class _SearchscreenState extends State<Searchscreen> {
         controller.text = detail.result.name;
         LatLng location = LatLng(detail.result.geometry!.location.lat, detail.result.geometry!.location.lng);
         if(isPickup)
-          {
-            _pickUpLocation = location;
-          }
+        {
+          _pickUpLocation = location;
+        }
         else
-          {
-            _destinationLocation = location;
-          }
+        {
+          _destinationLocation = location;
+        }
         print("${detail.result.name} - ${detail.result.geometry?.location.lat}, ${detail.result.geometry?.location.lng}");
       });
     }
@@ -62,17 +62,17 @@ class _SearchscreenState extends State<Searchscreen> {
   void _navigateToRideOptions()
   {
     if(_pickUpLocation != null && _destinationLocation != null)
-      {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => Rideoption(
-          pickupLocation : _pickUpLocation!,
-          destinationLocation : _destinationLocation!,
-        ),
-        ));
-      }
+    {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => Rideoption(
+        pickupLocation : _pickUpLocation!,
+        destinationLocation : _destinationLocation!,
+      ),
+      ));
+    }
     else
-      {
-        print("Error : Both Location need to be selected");
-      }
+    {
+      print("Error : Both Location need to be selected");
+    }
   }
 
   @override
@@ -110,9 +110,9 @@ class _SearchscreenState extends State<Searchscreen> {
                       onPressed: _navigateToRideOptions,
                       child: Text("Show Ride Options"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFB8E2F2),
-                        minimumSize: Size(double.infinity, 50),
-                        textStyle: TextStyle(fontSize: 18)
+                          backgroundColor: Color(0xFFB8E2F2),
+                          minimumSize: Size(double.infinity, 50),
+                          textStyle: TextStyle(fontSize: 18)
                       ),
                     ),
                   ),

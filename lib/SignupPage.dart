@@ -65,7 +65,7 @@ class SignupPage extends StatelessWidget {
                         hintText: "Email",
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                           borderSide: BorderSide.none),
+                            borderSide: BorderSide.none),
                         fillColor: Colors.black.withOpacity(0.1),
                         filled: true,
                         prefixIcon: const Icon(Icons.email),
@@ -136,9 +136,25 @@ class SignupPage extends StatelessWidget {
           'phone': phoneController.text.trim(),
         });
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+        // Show confirmation message
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text("Registration Successful"),
+            content: const Text("Your account has been created successfully."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
         );
       }
     } on FirebaseAuthException catch (e) {

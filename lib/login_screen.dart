@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:passenger_app/SignupPage.dart';
 import 'MainScreen/main_screen.dart';
-import 'SignupPage.dart';  // Ensure you have this import statement for accessing MainScreen
+import 'SignupPage.dart';
+// Ensure you have this import statement for accessing MainScreen
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
@@ -34,7 +35,7 @@ class LoginPage extends StatelessWidget {
   Widget _header(BuildContext context) {
     return Column(
       children: [
-        Image.asset("assets/Car.png", height: 400,width: 400),
+        Image.asset("assets/Car.png", height: 400, width: 400),
         const SizedBox(height: 20),
         const Text(
           "Welcome Back",
@@ -52,7 +53,7 @@ class LoginPage extends StatelessWidget {
         TextField(
           controller: _emailTextController,
           decoration: InputDecoration(
-              hintText: "Username",
+              hintText: "Email",
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none
@@ -85,7 +86,7 @@ class LoginPage extends StatelessWidget {
               );
               if (userCredential.user != null) {
                 Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const MainScreen()),
+                  MaterialPageRoute(builder: (context) => MainScreen()),
                 );
               }
             } on FirebaseAuthException catch (e) {
@@ -98,7 +99,6 @@ class LoginPage extends StatelessWidget {
             shape: const StadiumBorder(),
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: Color(0xFFB8E2F2),
-            foregroundColor: Colors.white,
           ),
           child: const Text(
             "Login",
